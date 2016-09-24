@@ -13,10 +13,11 @@ trainOutcomes = trainData['Survived']
 #TODO decide whether there's anything important in the names
 trainData['numRelatives'] = trainData['SibSp'] + trainData['Parch']
 trainData['hasRelatives'] = trainData['numRelatives'].apply(lambda x: 1 if x > 0 else 0)
-trainData = trainData[trainData.columns.difference(['Survived', 'Name', 'Ticket', 'PassengerId', 'numRelatives', 'SibSp', 'Parch', 'Cabin'])]
-trainData['Sex'] = trainData['Sex'].apply(lambda x: 1 if x == 'male' else 0)
 avgAge = numpy.nanmean(trainData['Age'])
 trainData['Age'] = trainData['Age'].apply(lambda x: avgAge if math.isnan(x) else x)
+trainData['isChild'] = trainData['Age'].apply(lambda x: 1 if x < 7 else 0)
+trainData = trainData[trainData.columns.difference(['Survived', 'Name', 'Ticket', 'PassengerId', 'numRelatives', 'SibSp', 'Parch', 'Cabin', 'Age'])]
+trainData['Sex'] = trainData['Sex'].apply(lambda x: 1 if x == 'male' else 0)
 avgFare = numpy.nanmean(trainData['Fare'])
 trainData['Fare'] = trainData['Fare'].apply(lambda x: avgFare if math.isnan(x) else x)
 trainData['Embarked'] = trainData['Embarked'].apply(transformEmbarked)
@@ -26,14 +27,15 @@ testData = pandas.read_csv('./test.csv')
 passengerIds = testData['PassengerId']
 testData['numRelatives'] = testData['SibSp'] + testData['Parch']
 testData['hasRelatives'] = testData['numRelatives'].apply(lambda x: 1 if x > 0 else 0)
-testData = testData[testData.columns.difference(['Name', 'Ticket', 'PassengerId', 'numRelatives', 'SibSp', 'Parch', 'Cabin'])]
-testData['Sex'] = testData['Sex'].apply(lambda x: 1 if x == 'male' else 0)
 testData['Age'] = testData['Age'].apply(lambda x: avgAge if math.isnan(x) else x)
+testData['isChild'] = testData['Age'].apply(lambda x: 1 if x < 7 else 0)
+testData = testData[testData.columns.difference(['Name', 'Ticket', 'PassengerId', 'numRelatives', 'SibSp', 'Parch', 'Cabin', 'Age'])]
+testData['Sex'] = testData['Sex'].apply(lambda x: 1 if x == 'male' else 0)
 testData['Fare'] = testData['Fare'].apply(lambda x: avgFare if math.isnan(x) else x)
 testData['Embarked'] = testData['Embarked'].apply(transformEmbarked)
 #testData['Cabin'] = testData['Cabin'].apply(lambda x: 1 if isinstance(x, str) else 0)
 
-model = SVC()
+model = SVC(C=100)
 model.fit(trainData, trainOutcomes)
 
 prediction = model.predict(testData)
