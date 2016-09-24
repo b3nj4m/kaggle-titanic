@@ -26,7 +26,7 @@ def plotPairwise(data):
     for col2 in data.columns:
       if not col1 == col2 and isNumeric(data, col1) and isNumeric(data, col2):
         plot.figure()
-        data[[col1, col2]].plot.hist(alpha=0.5, stacked=True)
+        data[[col1, col2]].plot.scatter(col1, col2)
         plot.savefig('./' + col1 + '-vs-' + col2 + '.png')
         plot.close()
 
@@ -108,6 +108,6 @@ if __name__ == '__main__':
   from sklearn.ensemble import RandomForestClassifier
   from sklearn.svm import SVC
   from sklearn.neighbors import KNeighborsClassifier
-  testKaggle(KNeighborsClassifier(n_neighbors=40, n_jobs=2, weights='distance'))
+  #testLocal(KNeighborsClassifier(n_neighbors=40, n_jobs=2, weights='distance'))
   #testLocal(RandomForestClassifier(n_estimators=100, n_jobs=2, max_depth=6))
-  #testLocal(SVC(C=500, gamma=0.001))
+  testLocal(SVC(C=500, gamma=0.001))
