@@ -3,6 +3,7 @@ import pandas
 import numpy
 import math
 
+#TODO pull transforms/features out into separate lib
 def transformEmbarked(x):
   if x == 'C': return 1
   elif x == 'Q': return 2
@@ -35,7 +36,7 @@ testData['Fare'] = testData['Fare'].apply(lambda x: avgFare if math.isnan(x) els
 testData['Embarked'] = testData['Embarked'].apply(transformEmbarked)
 #testData['Cabin'] = testData['Cabin'].apply(lambda x: 1 if isinstance(x, str) else 0)
 
-model = RandomForestClassifier(max_depth=8)
+model = RandomForestClassifier(max_depth=8, n_jobs=2, n_estimators=50)
 model.fit(trainData, trainOutcomes)
 
 prediction = model.predict(testData)
