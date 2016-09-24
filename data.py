@@ -1,8 +1,34 @@
 from sklearn.cross_validation import train_test_split
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix
 import pandas
 import numpy
 import math
+import matplotlib.pyplot as plot
+import matplotlib
+matplotlib.style.use('ggplot')
+
+def plotSurvivedVsDied(data):
+  survived = data[data['Survived'] == 1]
+  died = data[data['Survived'] == 0]
+  for col in data.columns:
+    if data[col].dtype == numpy.int64 and data[col].dtype == numpy.float64:
+      plot.figure()
+      survived[col].plot.hist(alpha=0.5)
+      died[col].plot.hist(alpha=0.5)
+      plot.savefig('./survive-vs-die-' + col + '.png')
+      plot.close()
+
+def isNumeric(data, col):
+  return data[col].dtype == numpy.int64 or data[col].dtype == numpy.float64
+
+def plotPairwise(data):
+  for col1 in data.columns:
+    for col2 in data.columns:
+      if not col1 == col2 and isNumeric(data, col1) and isNumeric(data, col2):
+        plot.figure()
+        data[[col1, col2]].plot.hist(alpha=0.5, stacked=True)
+        plot.savefig('./' + col1 + '-vs-' + col2 + '.png')
+        plot.close()
 
 def getTrainData():
   trainData = pandas.read_csv('./train.csv')
@@ -25,7 +51,7 @@ def dataKaggle():
   trainData, trainOutcomes = getTrainData()
   trainData, avgAge, stdAge, avgFare, stdFare = transformData(trainData)
   testData, passengerIds = getTestDataKaggle()
-  testData, avgAge, avgFare = transformData(testData, avgAge, stdAge, avgFare, stdFare)
+  testData, avgAge, stdAge, avgFare, stdFare = transformData(testData, avgAge, stdAge, avgFare, stdFare)
   return trainData, trainOutcomes, testData, passengerIds
 
 def transformData(data, avgAge = None, stdAge = None, avgFare = None, stdFare = None):
@@ -63,6 +89,7 @@ def testLocal(model):
   trainData, trainOutcomes, testData, testOutcomes = dataLocal()
   model.fit(trainData, trainOutcomes)
   prediction = model.predict(testData)
+  print(confusion_matrix(testOutcomes, prediction))
   print(classification_report(testOutcomes, prediction))
   return prediction
 
@@ -80,5 +107,7 @@ def testKaggle(model):
 if __name__ == '__main__':
   from sklearn.ensemble import RandomForestClassifier
   from sklearn.svm import SVC
-  testLocal(RandomForestClassifier(n_estimators=100, n_jobs=2, max_depth=6))
+  from sklearn.neighbors import KNeighborsClassifier
+  testKaggle(KNeighborsClassifier(n_neighbors=40, n_jobs=2, weights='distance'))
+  #testLocal(RandomForestClassifier(n_estimators=100, n_jobs=2, max_depth=6))
   #testLocal(SVC(C=500, gamma=0.001))
