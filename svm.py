@@ -1,4 +1,4 @@
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
 import pandas
 import numpy
 import math
@@ -33,7 +33,7 @@ testData['Fare'] = testData['Fare'].apply(lambda x: avgFare if math.isnan(x) els
 testData['Embarked'] = testData['Embarked'].apply(transformEmbarked)
 #testData['Cabin'] = testData['Cabin'].apply(lambda x: 1 if isinstance(x, str) else 0)
 
-model = RandomForestClassifier(max_depth=6)
+model = SVC()
 model.fit(trainData, trainOutcomes)
 
 prediction = model.predict(testData)
@@ -41,4 +41,4 @@ prediction = model.predict(testData)
 predictionDF = pandas.DataFrame()
 predictionDF['PassengerId'] = passengerIds
 predictionDF['Survived'] = prediction
-predictionDF.to_csv('./rf-prediction.csv', index=False)
+predictionDF.to_csv('./svm-prediction.csv', index=False)
