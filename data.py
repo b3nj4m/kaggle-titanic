@@ -93,6 +93,14 @@ def testLocal(model):
   print(classification_report(testOutcomes, prediction))
   return prediction
 
+def testLocalNN(model, epochs = 10):
+  trainData, trainOutcomes, testData, testOutcomes = dataLocal()
+  model.fit(trainData.values, numpy.eye(2)[trainOutcomes.values], n_epoch=epochs)
+  prediction = numpy.argmax(model.predict(testData.values), axis=1)
+  print(confusion_matrix(testOutcomes, prediction))
+  print(classification_report(testOutcomes, prediction))
+  return prediction
+
 def testKaggle(model):
   trainData, trainOutcomes, testData, passengerIds = dataKaggle()
   model.fit(trainData, trainOutcomes)
@@ -104,10 +112,38 @@ def testKaggle(model):
   predictionDF.to_csv('./prediction.csv', index=False)
   return prediction
 
+def testKaggleNN(model, epochs = 10):
+  trainData, trainOutcomes, testData, passengerIds = dataKaggle()
+  model.fit(trainData.values, numpy.eye(2)[trainOutcomes], n_epoch=epochs)
+  prediction = numpy.argmax(model.predict(testData.values), axis=1)
+  predictionDF = pandas.DataFrame({
+    'PassengerId': passengerIds,
+    'Survived': prediction
+  })
+  predictionDF.to_csv('./prediction.csv', index=False)
+  return prediction
+
+def getNN():
+  tflearn.init_graph(num_cores=2)
+
+  #TODO way to not hard-code shape
+  net = tflearn.input_data(shape=[None, 8])
+  net = tflearn.fully_connected(net, 64, activation='relu')
+  net = tflearn.dropout(net, 0.8)
+  net = tflearn.fully_connected(net, 64, activation='relu')
+  net = tflearn.fully_connected(net, 2, activation='softmax')
+  net = tflearn.regression(net, optimizer='adam', loss='categorical_crossentropy', learning_rate=0.001)
+
+  return tflearn.DNN(net)
+
 if __name__ == '__main__':
   from sklearn.ensemble import RandomForestClassifier
   from sklearn.svm import SVC
   from sklearn.neighbors import KNeighborsClassifier
-  #testLocal(KNeighborsClassifier(n_neighbors=40, n_jobs=2, weights='distance'))
-  #testLocal(RandomForestClassifier(n_estimators=100, n_jobs=2, max_depth=6))
-  testLocal(SVC(C=500, gamma=0.001))
+  from sklearn.cluster import KMeans
+  import tflearn
+  testKaggleNN(getNN(), 100)
+  #testLocal(KMeans(n_clusters=2, n_jobs=2, n_init=100))
+  #testKaggle(KNeighborsClassifier(n_neighbors=40, n_jobs=2, weights='distance'))
+  #testKaggle(RandomForestClassifier(n_estimators=100, n_jobs=2, max_depth=6))
+  #testKaggle(SVC(C=500, gamma=0.001))
