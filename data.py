@@ -55,8 +55,8 @@ def dataKaggle():
   return trainData, trainOutcomes, testData, passengerIds
 
 def transformData(data, avgAge = None, stdAge = None, avgFare = None, stdFare = None):
-  data['numRelatives'] = data['SibSp'] + data['Parch']
-  data['hasRelatives'] = data['numRelatives'].apply(lambda x: 1 if x > 0 else 0)
+  numRelatives = data['SibSp'] + data['Parch']
+  data['hasRelatives'] = numRelatives.apply(lambda x: 1 if x > 0 else 0)
   data['Sex'] = data['Sex'].apply(lambda x: 1 if x == 'male' else 0)
 
   if avgAge == None:
@@ -75,14 +75,14 @@ def transformData(data, avgAge = None, stdAge = None, avgFare = None, stdFare = 
 
   embarked = pandas.get_dummies(data['Embarked'])
   embarked.drop(['Q'], axis=1, inplace=True)
-  data = data.join(embarked)
+  #data = data.join(embarked)
 
   classes = pandas.get_dummies(data['Pclass'])
   classes.columns = ['isFirstClass', 'isSecondClass', 'isThirdClass']
   classes.drop(['isSecondClass'], axis=1, inplace=True)
   data = data.join(classes)
 
-  data.drop(['Name', 'Ticket', 'PassengerId', 'numRelatives', 'SibSp', 'Parch', 'Cabin', 'Age', 'Embarked', 'Pclass', 'Fare'], axis=1, inplace=True)
+  data.drop(['Name', 'Ticket', 'PassengerId', 'SibSp', 'Parch', 'Cabin', 'Age', 'Embarked', 'Pclass', 'Fare'], axis=1, inplace=True)
   return data, avgAge, stdAge, avgFare, stdFare
 
 def testLocal(model):
@@ -127,12 +127,12 @@ def getNN():
   tflearn.init_graph(num_cores=2)
 
   #TODO way to not hard-code shape
-  net = tflearn.input_data(shape=[None, 8])
+  net = tflearn.input_data(shape=[None, 6])
   net = tflearn.fully_connected(net, 64, activation='relu')
   net = tflearn.dropout(net, 0.8)
   net = tflearn.fully_connected(net, 64, activation='relu')
   net = tflearn.fully_connected(net, 2, activation='softmax')
-  net = tflearn.regression(net, optimizer='adam', loss='categorical_crossentropy', learning_rate=0.001)
+  net = tflearn.regression(net, optimizer='adam', loss='categorical_crossentropy', learning_rate=0.0001)
 
   return tflearn.DNN(net)
 
